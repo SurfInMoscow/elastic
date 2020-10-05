@@ -16,19 +16,31 @@
 
     <properties>
         <java.version>11</java.version>
+        <elastic.rhlc>7.9.2</elastic.rhlc>
     </properties>
 
     <dependencies>
+
+        <!--   Elasticsearch client   -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-high-level-client</artifactId>
+            <version>${elastic.rhlc}</version>
         </dependency>
 
+        <!--   Tools   -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+
+        <!--   Spring Boot   -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
