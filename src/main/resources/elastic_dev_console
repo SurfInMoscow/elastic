@@ -1,0 +1,35 @@
+##Запросить все документы по индексу
+GET /items/_search
+{
+    "query": {
+        "match_all": {}
+    }
+}
+
+##Взять документ из индекса по _id
+GET /users/_doc/bdb8dab9-1c4e-45d7-8044-2cc98a6d2fd6
+
+{
+  "_index" : "users",
+  "_type" : "_doc",
+  "_id" : "bdb8dab9-1c4e-45d7-8044-2cc98a6d2fd6",
+  "_version" : 1,
+  "_seq_no" : 10,
+  "_primary_term" : 1,
+  "found" : true,
+  "_source" : {
+    "id" : "bdb8dab9-1c4e-45d7-8044-2cc98a6d2fd6",
+    "email" : "user@ya.ru",
+    "password" : "password",
+    "created" : "2020.10.06 01:04:40",
+    "items" : {
+      "id" : "c07380ac-578f-4aaf-b552-9d0135f8fff5",
+      "name" : "item2",
+      "description" : "test item",
+      "ownerID" : "bdb8dab9-1c4e-45d7-8044-2cc98a6d2fd6"
+    }
+  }
+}
+
+##Удаление индекса
+DELETE /users

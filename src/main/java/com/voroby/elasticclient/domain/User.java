@@ -1,6 +1,5 @@
 package com.voroby.elasticclient.domain;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
