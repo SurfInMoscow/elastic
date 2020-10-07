@@ -15,7 +15,7 @@ public class ItemJsonAdapter implements JsonSerializer<Item> {
         jsonObject.addProperty("id", item.getId());
         jsonObject.addProperty("name", item.getName());
         jsonObject.addProperty("description", item.getDescription());
-        jsonObject.addProperty("ownerID", item.getOwner().getId());
+        jsonObject.addProperty("owner", item.getOwner().getId());
 
         return jsonObject;
     }

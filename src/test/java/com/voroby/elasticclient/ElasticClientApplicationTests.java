@@ -53,9 +53,9 @@ class ElasticClientApplicationTests {
         items.add(item1);
 
         GsonBuilder builder = new GsonBuilder();
-        builder.registerTypeAdapter(User.class, new UserJsonAdapter());
-        userGson = builder.create();
         builder.registerTypeAdapter(Item.class, new ItemJsonAdapter());
+        userGson = builder.create();
+        builder.registerTypeAdapter(User.class, new UserJsonAdapter());
         itemGson = builder.create();
     }
 
