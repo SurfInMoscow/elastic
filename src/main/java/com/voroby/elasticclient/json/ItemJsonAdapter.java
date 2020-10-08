@@ -1,14 +1,11 @@
 package com.voroby.elasticclient.json;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
+import com.google.gson.*;
 import com.voroby.elasticclient.domain.Item;
 
 import java.lang.reflect.Type;
 
-public class ItemJsonAdapter implements JsonSerializer<Item> {
+public class ItemJsonAdapter implements JsonSerializer<Item>, JsonDeserializer<Item> {
     @Override
     public JsonElement serialize(Item item, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject jsonObject = new JsonObject();
@@ -18,5 +15,15 @@ public class ItemJsonAdapter implements JsonSerializer<Item> {
         jsonObject.addProperty("owner", item.getOwner().getId());
 
         return jsonObject;
+    }
+
+    @Override
+    public Item deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        Item item = new Item();
+        item.setId(json.getAsJsonObject().get("id").getAsString());
+        item.setName(json.getAsJsonObject().get("name").getAsString());
+        item.setDescription(json.getAsJsonObject().get("description").getAsString());
+
+        return item;
     }
 }

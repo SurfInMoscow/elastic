@@ -1,40 +1,22 @@
 package com.voroby.elasticclient;
 
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.voroby.elasticclient.domain.Item;
 import com.voroby.elasticclient.domain.User;
 import com.voroby.elasticclient.json.ItemJsonAdapter;
 import com.voroby.elasticclient.json.UserJsonAdapter;
-import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@SpringBootTest
-class ElasticClientApplicationTests {
-
-    @Autowired
-    private RestHighLevelClient restHighLevelClient;
-
-    @Qualifier("elasticResponseListener")
-    @Autowired
-    private ActionListener<IndexResponse> elasticResponseListener;
-
-    private static Gson userGson;
-    private static Gson itemGson;
+class IndexElasticTest extends AbstractElasticTest {
 
     private static List<User> users = new ArrayList<>();
     private static List<Item> items = new ArrayList<>();
