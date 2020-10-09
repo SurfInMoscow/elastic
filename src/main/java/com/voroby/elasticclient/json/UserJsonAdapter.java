@@ -28,8 +28,7 @@ public class UserJsonAdapter implements JsonSerializer<User>, JsonDeserializer<U
         user.setId(json.getAsJsonObject().get("id").getAsString());
         user.setEmail(json.getAsJsonObject().get("email").getAsString());
         user.setPassword(json.getAsJsonObject().get("password").getAsString());
-        //TODO
-        user.setCreated(extractLocalDateTime(null));
+        user.setCreated(extractLocalDateTime(json.getAsJsonObject().get("created")));
 
         final JsonArray items = json.getAsJsonObject().getAsJsonArray("items");
         Set<Item> itemSet = new HashSet<>();
@@ -45,8 +44,16 @@ public class UserJsonAdapter implements JsonSerializer<User>, JsonDeserializer<U
         return user;
     }
 
-    private LocalDateTime extractLocalDateTime(JsonElement element) {
-        //TODO
-        return null;
+    private LocalDateTime extractLocalDateTime(JsonElement created) {
+        JsonElement dateElement = created.getAsJsonObject().get("date");
+        JsonElement timeElement = created.getAsJsonObject().get("time");
+
+        return LocalDateTime.of(dateElement.getAsJsonObject().get("year").getAsInt(),
+                dateElement.getAsJsonObject().get("month").getAsInt(),
+                dateElement.getAsJsonObject().get("day").getAsInt(),
+                timeElement.getAsJsonObject().get("hour").getAsInt(),
+                timeElement.getAsJsonObject().get("minute").getAsInt(),
+                timeElement.getAsJsonObject().get("second").getAsInt(),
+                timeElement.getAsJsonObject().get("nano").getAsInt());
     }
 }
