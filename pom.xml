@@ -18,6 +18,7 @@
         <java.version>11</java.version>
         <elastic.rhlc>7.9.2</elastic.rhlc>
         <gson.version>2.8.6</gson.version>
+        <mockito.version>3.5.13</mockito.version>
     </properties>
 
     <dependencies>
@@ -57,6 +58,12 @@
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
 
+        <!--   Test   -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
