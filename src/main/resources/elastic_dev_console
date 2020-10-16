@@ -53,3 +53,11 @@ GET /users/_doc/bdb8dab9-1c4e-45d7-8044-2cc98a6d2fd6
 
 ##Удаление индекса
 DELETE /users
+
+##Обновить документ
+POST /users/_update/044ff839-10a8-4d03-96e0-85a1cb0efee3
+{
+  "doc": {
+    "email": "super@yandex.ru"
+  }
+}
