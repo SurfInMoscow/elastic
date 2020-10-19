@@ -21,7 +21,9 @@ public class ElasticClientApplication {
     @Bean
     public RestHighLevelClient restHighLevelClient() {
         return new RestHighLevelClient(RestClient
-                .builder(new HttpHost("localhost", 9200, "http")));
+                .builder(new HttpHost("localhost", 9200, "http"),
+                        new HttpHost("localhost", 9201, "http"),
+                        new HttpHost("localhost", 9202, "http")));
     }
 
     @Bean
