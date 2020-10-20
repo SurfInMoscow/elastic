@@ -17,7 +17,6 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -29,29 +28,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SearchElasticTest extends AbstractElasticTest {
-    private static List<User> users = new ArrayList<>();
-    private static List<Item> items = new ArrayList<>();
-
-    @BeforeAll
-    public static void populate() throws IOException {
-        User user = new User("user@ya.ru", "password");
-        Item item = new Item("GetItem1", "test item", user);
-        Item item1 = new Item("GetItem2", "test item", user);
-        user.getItems().add(item);
-        user.getItems().add(item1);
-        User user1 = new User("super@ya.ru", "superpass");
-        users.add(user);
-        users.add(user1);
-        items.add(item);
-        items.add(item1);
-
-        GsonBuilder builder = new GsonBuilder();
-        builder.registerTypeAdapter(Item.class, new ItemJsonAdapter());
-        userGson = builder.create();
-        builder.registerTypeAdapter(User.class, new UserJsonAdapter());
-        itemGson = builder.create();
-    }
-
     @Test
     public void search() throws IOException, InterruptedException {
         index();
@@ -73,7 +49,7 @@ public class SearchElasticTest extends AbstractElasticTest {
         */
 
         //add match query for value in several fields in our indices.
-        MultiMatchQueryBuilder queryBuilder = QueryBuilders.multiMatchQuery("GetItem2", "name", "items.name");
+        MultiMatchQueryBuilder queryBuilder = QueryBuilders.multiMatchQuery("Item2", "name", "items.name");
         sourceBuilder.query(queryBuilder);
         sourceBuilder.size(100);
         searchRequest.source(sourceBuilder);

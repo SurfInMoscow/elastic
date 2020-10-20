@@ -17,13 +17,10 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,29 +28,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class GetElasticTest extends AbstractElasticTest {
-    private static List<User> users = new ArrayList<>();
-    private static List<Item> items = new ArrayList<>();
-
-    @BeforeAll
-    public static void populate() throws IOException {
-        User user = new User("user@ya.ru", "password");
-        Item item = new Item("GetItem1", "test item", user);
-        Item item1 = new Item("GetItem2", "test item", user);
-        user.getItems().add(item);
-        user.getItems().add(item1);
-        User user1 = new User("super@ya.ru", "superpass");
-        users.add(user);
-        users.add(user1);
-        items.add(item);
-        items.add(item1);
-
-        GsonBuilder builder = new GsonBuilder();
-        builder.registerTypeAdapter(Item.class, new ItemJsonAdapter());
-        userGson = builder.create();
-        builder.registerTypeAdapter(User.class, new UserJsonAdapter());
-        itemGson = builder.create();
-    }
-
     @Test
     public void basicGetRequest() throws IOException {
         index();

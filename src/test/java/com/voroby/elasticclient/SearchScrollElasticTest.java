@@ -17,7 +17,6 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -30,29 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SearchScrollElasticTest extends AbstractElasticTest {
-    private static List<User> users = new ArrayList<>();
-    private static List<Item> items = new ArrayList<>();
-
-    @BeforeAll
-    public static void populate() throws IOException {
-        User user = new User("user@ya.ru", "password");
-        Item item = new Item("Item1", "test item", user);
-        Item item1 = new Item("Item2", "test item", user);
-        user.getItems().add(item);
-        user.getItems().add(item1);
-        User user1 = new User("super@ya.ru", "superpass");
-        users.add(user);
-        users.add(user1);
-        items.add(item);
-        items.add(item1);
-
-        GsonBuilder builder = new GsonBuilder();
-        builder.registerTypeAdapter(Item.class, new ItemJsonAdapter());
-        userGson = builder.create();
-        builder.registerTypeAdapter(User.class, new UserJsonAdapter());
-        itemGson = builder.create();
-    }
-
     @Test
     public void searchScroll() throws IOException, InterruptedException {
         index();
