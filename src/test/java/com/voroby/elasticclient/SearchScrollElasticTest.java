@@ -8,14 +8,14 @@ import com.voroby.elasticclient.json.ItemJsonAdapter;
 import com.voroby.elasticclient.json.UserJsonAdapter;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.*;
 import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -26,17 +26,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class SearchElasticTest extends AbstractElasticTest {
+public class SearchScrollElasticTest extends AbstractElasticTest {
     private static List<User> users = new ArrayList<>();
     private static List<Item> items = new ArrayList<>();
 
     @BeforeAll
     public static void populate() throws IOException {
         User user = new User("user@ya.ru", "password");
-        Item item = new Item("GetItem1", "test item", user);
-        Item item1 = new Item("GetItem2", "test item", user);
+        Item item = new Item("Item1", "test item", user);
+        Item item1 = new Item("Item2", "test item", user);
         user.getItems().add(item);
         user.getItems().add(item1);
         User user1 = new User("super@ya.ru", "superpass");
@@ -53,53 +54,56 @@ public class SearchElasticTest extends AbstractElasticTest {
     }
 
     @Test
-    public void search() throws IOException, InterruptedException {
+    public void searchScroll() throws IOException, InterruptedException {
         index();
-        /*don't use this delay! I did it because my test computer is slow and
-        local elastic didn't finished indexing before search query starts.*/
-        Thread.sleep(2000);
+        Thread.sleep(1000);
+        Scroll scroll = new Scroll(TimeValue.timeValueMinutes(1L));
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.indices("users", "items");
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        /*
-        To source simple match query by single value for filed. It's also possible to add several values check.
-        sourceBuilder.query(QueryBuilders.matchQuery("name", "GetItem2"));
+        searchRequest.scroll(scroll);
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        MultiMatchQueryBuilder queryBuilder = QueryBuilders.multiMatchQuery("Item1", "name", "items.name");
+        searchSourceBuilder.query(queryBuilder);
+        searchSourceBuilder.size(5); //for testing
+        searchRequest.source(searchSourceBuilder);
 
-        Alternative variant.
-        MatchQueryBuilder match = new MatchQueryBuilder("name", "GetItem2");
-
-        In this case we refer to field in nested object in our document.
-        MatchQueryBuilder match1 = new MatchQueryBuilder("items.name", "GetItem2");
-        */
-
-        //add match query for value in several fields in our indices.
-        MultiMatchQueryBuilder queryBuilder = QueryBuilders.multiMatchQuery("GetItem2", "name", "items.name");
-        sourceBuilder.query(queryBuilder);
-        sourceBuilder.size(100);
-        searchRequest.source(sourceBuilder);
         SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+        String scrollId = searchResponse.getScrollId();
+        SearchHit[] hits = searchResponse.getHits().getHits();
 
-        SearchHits hits = searchResponse.getHits();
-        List<SearchHit> list = Arrays.asList(hits.getHits());
         List<User> foundUsers = new ArrayList<>();
         List<Item> foundItems = new ArrayList<>();
-        list.forEach(hit -> {
-            String hitAsString = hit.getSourceAsString();
-            Gson gson;
-            switch (hit.getIndex()) {
-                case "users":
-                    gson = getGsonWithTypeAdapter(User.class, new UserJsonAdapter());
-                    foundUsers.add(gson.fromJson(hitAsString, User.class));
-                    break;
-                case "items":
-                    gson = getGsonWithTypeAdapter(Item.class, new ItemJsonAdapter());
-                    foundItems.add(gson.fromJson(hitAsString, Item.class));
-                    break;
-            }
-        });
 
-        assertTrue(foundUsers.stream().anyMatch(found -> found.equals(users.get(0))));
-        assertTrue(foundItems.stream().anyMatch(found -> found.equals(items.get(1))));
+        while (hits != null && hits.length > 0) {
+            Arrays.stream(hits).forEach(hit -> {
+                String hitAsString = hit.getSourceAsString();
+                Gson gson;
+                switch (hit.getIndex()) {
+                    case "users":
+                        gson = getGsonWithTypeAdapter(User.class, new UserJsonAdapter());
+                        foundUsers.add(gson.fromJson(hitAsString, User.class));
+                        break;
+                    case "items":
+                        gson = getGsonWithTypeAdapter(Item.class, new ItemJsonAdapter());
+                        foundItems.add(gson.fromJson(hitAsString, Item.class));
+                        break;
+                }
+            });
+            SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollId);
+            scrollRequest.scroll(scroll);
+            searchResponse = restHighLevelClient.scroll(scrollRequest, RequestOptions.DEFAULT);
+            scrollId = searchResponse.getScrollId();
+            hits = searchResponse.getHits().getHits();
+        }
+
+        ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
+        clearScrollRequest.addScrollId(scrollId);
+        ClearScrollResponse clearScrollResponse = restHighLevelClient.clearScroll(clearScrollRequest, RequestOptions.DEFAULT);
+        boolean succeeded = clearScrollResponse.isSucceeded();
+        assertTrue(succeeded);
+        foundItems.forEach(item -> assertEquals("item1", item.getName().toLowerCase()));
+        foundUsers.forEach(user -> assertEquals("item1", user.getItems().stream()
+                .filter(item -> item.getName().toLowerCase().equals("item1")).findFirst().get().getName().toLowerCase()));
     }
 
     private void index() throws IOException {
@@ -133,6 +137,6 @@ public class SearchElasticTest extends AbstractElasticTest {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(type, typeAdapter);
 
-        return  builder.create();
+        return builder.create();
     }
 }

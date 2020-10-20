@@ -61,3 +61,25 @@ POST /users/_update/044ff839-10a8-4d03-96e0-85a1cb0efee3
     "email": "super@yandex.ru"
   }
 }
+
+##Запрос с match query - нечуствителен к регистру
+GET /items/_search
+{
+  "size": 100,
+  "query": {
+    "match": {
+      "name": "Item1"
+    }
+  }
+}
+
+##Запрос с term query - чуствителен к регистру
+GET /users/_search
+{
+  "size": 100,
+  "query": {
+    "term": {
+      "items.name.keyword": "Item1"
+    }
+  }
+}
