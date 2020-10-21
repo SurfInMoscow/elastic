@@ -6,12 +6,15 @@ import com.voroby.elasticclient.domain.Item;
 import com.voroby.elasticclient.domain.User;
 import com.voroby.elasticclient.json.ItemJsonAdapter;
 import com.voroby.elasticclient.json.UserJsonAdapter;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.common.settings.Settings;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -58,6 +61,15 @@ public class AbstractElasticTest {
         createIndices();
     }
 
+    @AfterAll
+    public static void deleteIndices() throws IOException {
+        DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest();
+        deleteIndexRequest.indices("users", "items");
+        RestHighLevelClient restHighLevelClient1 = getRestHighLevelClient();
+        AcknowledgedResponse delete = restHighLevelClient1.indices().delete(deleteIndexRequest, RequestOptions.DEFAULT);
+        assertTrue(delete.isAcknowledged());
+    }
+
 
     private static void createIndices() throws IOException {
         index("users");
@@ -65,10 +77,7 @@ public class AbstractElasticTest {
     }
 
     private static void index(String index) throws IOException {
-        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
-        applicationContext.register(ElasticClientApplication.class);
-        applicationContext.refresh();
-        RestHighLevelClient restHighLevelClient1 = applicationContext.getBean(RestHighLevelClient.class);
+        RestHighLevelClient restHighLevelClient1 = getRestHighLevelClient();
         GetIndexRequest getIndexRequest = new GetIndexRequest(index);
 
         if (!restHighLevelClient1.indices().exists(getIndexRequest, RequestOptions.DEFAULT)) {
@@ -80,5 +89,12 @@ public class AbstractElasticTest {
             assertTrue(createIndexResponse.isAcknowledged());
             assertTrue(createIndexResponse.isShardsAcknowledged());
         }
+    }
+
+    private static RestHighLevelClient getRestHighLevelClient() {
+        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
+        applicationContext.register(ElasticClientApplication.class);
+        applicationContext.refresh();
+        return applicationContext.getBean(RestHighLevelClient.class);
     }
 }
