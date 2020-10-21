@@ -40,7 +40,7 @@ public class SearchScrollElasticTest extends AbstractElasticTest {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         MultiMatchQueryBuilder queryBuilder = QueryBuilders.multiMatchQuery("Item1", "name", "items.name");
         searchSourceBuilder.query(queryBuilder);
-        searchSourceBuilder.size(5); //for testing
+        searchSourceBuilder.size(20); //for testing
         searchRequest.source(searchSourceBuilder);
 
         SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);

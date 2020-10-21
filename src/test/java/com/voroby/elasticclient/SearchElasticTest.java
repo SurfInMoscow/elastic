@@ -11,6 +11,7 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -33,7 +34,7 @@ public class SearchElasticTest extends AbstractElasticTest {
         index();
         /*don't use this delay! I did it because my test computer is slow and
         local elastic didn't finished indexing before search query starts.*/
-        Thread.sleep(2000);
+        Thread.sleep(5000);
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.indices("users", "items");
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
@@ -51,7 +52,8 @@ public class SearchElasticTest extends AbstractElasticTest {
         //add match query for value in several fields in our indices.
         MultiMatchQueryBuilder queryBuilder = QueryBuilders.multiMatchQuery("Item2", "name", "items.name");
         sourceBuilder.query(queryBuilder);
-        sourceBuilder.size(100);
+        sourceBuilder.size(1000);
+        sourceBuilder.timeout(TimeValue.timeValueSeconds(10));
         searchRequest.source(sourceBuilder);
         SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
 
