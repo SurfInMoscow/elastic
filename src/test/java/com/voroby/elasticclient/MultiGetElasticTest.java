@@ -6,14 +6,11 @@ import com.voroby.elasticclient.domain.Item;
 import com.voroby.elasticclient.domain.User;
 import com.voroby.elasticclient.json.ItemJsonAdapter;
 import com.voroby.elasticclient.json.UserJsonAdapter;
-import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.get.MultiGetItemResponse;
 import org.elasticsearch.action.get.MultiGetRequest;
 import org.elasticsearch.action.get.MultiGetResponse;
-import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.common.xcontent.XContentType;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -28,7 +25,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class MultiGetElasticTest extends AbstractElasticTest {
     @Test
     public void multiGetRequest() throws IOException {
-        index();
         MultiGetRequest multiGetRequest = new MultiGetRequest();
         users.forEach(user -> multiGetRequest.add(new MultiGetRequest.Item("users", user.getId())));
         items.forEach(item -> multiGetRequest.add(new MultiGetRequest.Item("items", item.getId())));
@@ -61,33 +57,6 @@ public class MultiGetElasticTest extends AbstractElasticTest {
 
     private String gsonString(GetResponse getResponse) {
         return getResponse.getSourceAsString();
-    }
-
-    private void index() throws IOException {
-        indexUsers();
-        indexItems();
-    }
-
-    private void indexUsers() throws IOException {
-        BulkRequest bulkRequest = new BulkRequest();
-        users.forEach(user -> {
-            IndexRequest request = new IndexRequest("users");
-            request.id(user.getId());
-            request.source(userGson.toJson(user), XContentType.JSON);
-            bulkRequest.add(request);
-        });
-        restHighLevelClient.bulk(bulkRequest, RequestOptions.DEFAULT);
-    }
-
-    private void indexItems() throws IOException {
-        BulkRequest bulkRequest = new BulkRequest();
-        items.forEach(item -> {
-            IndexRequest request = new IndexRequest("items");
-            request.id(item.getId());
-            request.source(itemGson.toJson(item), XContentType.JSON);
-            bulkRequest.add(request);
-        });
-        restHighLevelClient.bulk(bulkRequest, RequestOptions.DEFAULT);
     }
 
     private Gson getGsonWithTypeAdapter(Type type, Object typeAdapter) {

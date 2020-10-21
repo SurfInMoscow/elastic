@@ -6,12 +6,9 @@ import com.voroby.elasticclient.domain.Item;
 import com.voroby.elasticclient.domain.User;
 import com.voroby.elasticclient.json.ItemJsonAdapter;
 import com.voroby.elasticclient.json.UserJsonAdapter;
-import org.elasticsearch.action.bulk.BulkRequest;
-import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.*;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.Scroll;
@@ -30,9 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SearchScrollElasticTest extends AbstractElasticTest {
     @Test
-    public void searchScroll() throws IOException, InterruptedException {
-        index();
-        Thread.sleep(1000);
+    public void searchScroll() throws IOException {
         Scroll scroll = new Scroll(TimeValue.timeValueMinutes(1L));
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.indices("users", "items");
@@ -40,7 +35,7 @@ public class SearchScrollElasticTest extends AbstractElasticTest {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         MultiMatchQueryBuilder queryBuilder = QueryBuilders.multiMatchQuery("Item1", "name", "items.name");
         searchSourceBuilder.query(queryBuilder);
-        searchSourceBuilder.size(20); //for testing
+        searchSourceBuilder.size(500); //for testing
         searchRequest.source(searchSourceBuilder);
 
         SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
@@ -80,33 +75,6 @@ public class SearchScrollElasticTest extends AbstractElasticTest {
         foundItems.forEach(item -> assertEquals("item1", item.getName().toLowerCase()));
         foundUsers.forEach(user -> assertEquals("item1", user.getItems().stream()
                 .filter(item -> item.getName().toLowerCase().equals("item1")).findFirst().get().getName().toLowerCase()));
-    }
-
-    private void index() throws IOException {
-        indexUsers();
-        indexItems();
-    }
-
-    private void indexUsers() throws IOException {
-        BulkRequest bulkRequest = new BulkRequest();
-        users.forEach(user -> {
-            IndexRequest request = new IndexRequest("users");
-            request.id(user.getId());
-            request.source(userGson.toJson(user), XContentType.JSON);
-            bulkRequest.add(request);
-        });
-        restHighLevelClient.bulk(bulkRequest, RequestOptions.DEFAULT);
-    }
-
-    private void indexItems() throws IOException {
-        BulkRequest bulkRequest = new BulkRequest();
-        items.forEach(item -> {
-            IndexRequest request = new IndexRequest("items");
-            request.id(item.getId());
-            request.source(itemGson.toJson(item), XContentType.JSON);
-            bulkRequest.add(request);
-        });
-        restHighLevelClient.bulk(bulkRequest, RequestOptions.DEFAULT);
     }
 
     private Gson getGsonWithTypeAdapter(Type type, Object typeAdapter) {

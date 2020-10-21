@@ -83,3 +83,24 @@ GET /users/_search
     }
   }
 }
+
+##Создание индексов
+PUT /users
+{
+  "settings": {
+    "index": {
+      "number_of_shards": 5,
+      "number_of_replicas": 2
+    }
+  }
+}
+
+PUT /items
+{
+  "settings": {
+    "index": {
+      "number_of_shards": 5,
+      "number_of_replicas": 2
+    }
+  }
+}

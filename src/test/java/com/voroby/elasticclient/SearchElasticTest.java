@@ -6,13 +6,10 @@ import com.voroby.elasticclient.domain.Item;
 import com.voroby.elasticclient.domain.User;
 import com.voroby.elasticclient.json.ItemJsonAdapter;
 import com.voroby.elasticclient.json.UserJsonAdapter;
-import org.elasticsearch.action.bulk.BulkRequest;
-import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
@@ -30,11 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SearchElasticTest extends AbstractElasticTest {
     @Test
-    public void search() throws IOException, InterruptedException {
-        index();
-        /*don't use this delay! I did it because my test computer is slow and
-        local elastic didn't finished indexing before search query starts.*/
-        Thread.sleep(5000);
+    public void search() throws IOException {
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.indices("users", "items");
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
@@ -78,33 +71,6 @@ public class SearchElasticTest extends AbstractElasticTest {
 
         assertTrue(foundUsers.stream().anyMatch(found -> found.equals(users.get(0))));
         assertTrue(foundItems.stream().anyMatch(found -> found.equals(items.get(1))));
-    }
-
-    private void index() throws IOException {
-        indexUsers();
-        indexItems();
-    }
-
-    private void indexUsers() throws IOException {
-        BulkRequest bulkRequest = new BulkRequest();
-        users.forEach(user -> {
-            IndexRequest request = new IndexRequest("users");
-            request.id(user.getId());
-            request.source(userGson.toJson(user), XContentType.JSON);
-            bulkRequest.add(request);
-        });
-        restHighLevelClient.bulk(bulkRequest, RequestOptions.DEFAULT);
-    }
-
-    private void indexItems() throws IOException {
-        BulkRequest bulkRequest = new BulkRequest();
-        items.forEach(item -> {
-            IndexRequest request = new IndexRequest("items");
-            request.id(item.getId());
-            request.source(itemGson.toJson(item), XContentType.JSON);
-            bulkRequest.add(request);
-        });
-        restHighLevelClient.bulk(bulkRequest, RequestOptions.DEFAULT);
     }
 
     private Gson getGsonWithTypeAdapter(Type type, Object typeAdapter) {
