@@ -3,20 +3,26 @@ package com.voroby.elasticclient.domain.eom;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.util.UUID;
 
-@Document(indexName = "items", createIndex = false)
-@TypeAlias("item")
+@Document(indexName = "items_eom", replicas = 2, shards = 5)
 @Getter
 @Setter
 public class ItemEom {
     @Id
     private String id;
+
+    @Field(type = FieldType.Text)
     private String name;
+
+    @Field(type = FieldType.Text)
     private String description;
+
+    @Field(type = FieldType.Text)
     private UserEom owner;
 
     public ItemEom() {
